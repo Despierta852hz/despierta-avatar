@@ -12,7 +12,6 @@ const MessageLoading: React.FC = () => {
     >
       <Avatar />
 
-      {/* https://github.com/n3r4zzurr0/svg-spinners/blob/main/svg-smil/3-dots-bounce.svg?short_path=50864c0 */}
       <svg
         width="24"
         height="24"
