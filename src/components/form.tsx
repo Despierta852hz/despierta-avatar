@@ -26,7 +26,6 @@ const Form = ({ inputProps, buttonProps, onSubmit }: Props, ref: any) => {
         )}
         type="text"
       />
-
       <button
         {...buttonProps}
         type="submit"
