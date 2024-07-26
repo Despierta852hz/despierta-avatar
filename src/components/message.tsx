@@ -24,9 +24,16 @@ const Message: React.FC<MessageProps> = ({ content, role }) => {
         options={{
           overrides: {
             ol: ({ children }) => <ol className="list-decimal">{children}</ol>,
-            ul: ({ children }) => <ol className="list-disc">{children}</ol>,
+            ul: ({ children }) => <ul className="list-disc">{children}</ul>,
             a: {
               component: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+            },
+            img: {
+              component: ({ ...props }) => (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <img {...props} className="max-w-full h-auto" style={{ maxWidth: '70%' }} />
+                </div>
+              ),
             },
           },
         }}
