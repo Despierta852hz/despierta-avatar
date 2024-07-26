@@ -5,7 +5,7 @@ import UpstashLogo from "@/components/upstash-logo";
 
 interface ResponseMessageProps {
   content: string;
-  style?: React.CSSProperties; // Adding style prop
+  style?: React.CSSProperties;
 }
 
 const ResponseMessage: React.FC<ResponseMessageProps> = ({ content, style }) => {
@@ -13,13 +13,14 @@ const ResponseMessage: React.FC<ResponseMessageProps> = ({ content, style }) => 
     <article
       className={cx(
         "mb-4 flex items-start gap-4 p-4 md:p-5 rounded-2xl",
-        "bg-blue-50", // Different background color for response
+        "bg-blue-50",
       )}
       style={{
         ...style,
-        maxHeight: '100%', // Set a maximum height
-        overflowY: 'auto', // Enable vertical scrolling
-      }} >
+        maxHeight: '100%',
+        overflowY: 'auto',
+      }}
+    >
       <Markdown
         className={cx(
           "py-1.5 md:py-1 space-y-4",
@@ -39,7 +40,6 @@ const ResponseMessage: React.FC<ResponseMessageProps> = ({ content, style }) => 
               ),
             },
           },
-          
         }}
       >
         {content}
@@ -55,7 +55,7 @@ const ResponseAvatar: React.FC<{ className?: string }> = ({
     <div
       className={cx(
         "flex items-center justify-center size-8 shrink-0 rounded-full",
-        "bg-blue-950", // Different color for response avatar
+        "bg-blue-950",
         className,
       )}
     >
