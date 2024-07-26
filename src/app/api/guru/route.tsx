@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     const currentMessageContent = messages[messages.length - 1].content;
 
     const chatModel = new ChatOpenAI({
-      modelName: "gpt-4o",
+      modelName: "gpt-4-turbo",
       temperature: 0.2,
       streaming: true,
     });
