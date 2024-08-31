@@ -325,24 +325,6 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                 return <Message key={message.id} {...message} />;
               })}
               {streaming && <MessageLoading />}
-              {messages.length === 1 && (
-                <div className="mt-4 md:mt-6 grid md:grid-cols-2 gap-2 md:gap-4">
-                  {INITIAL_QUESTIONS.map((message) => {
-                    return (
-                      <button
-                        key={message.content}
-                        type="button"
-                        className="cursor-pointer select-none text-left bg-white font-normal
-                      border border-gray-200 rounded-xl p-3 md:px-4 md:py-3
-                      hover:bg-zinc-50 hover:border-zinc-400"
-                        onClick={() => onClickQuestion(message.content)}
-                      >
-                        {message.content}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
               <div ref={messagesEndRef} />
               <div
                 className={cx(
