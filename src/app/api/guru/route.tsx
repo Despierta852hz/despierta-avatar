@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     const tool = createRetrieverTool(retriever, {
       name: "Despierta-General-Knowledge",
-      description: "used to search General information to answer general questions about despierta (not recommanding products , music, therapies, services from despierta ...)",
+      description: "Use it to fetch information and specific recommandation from despierta ",
     });
 
     const default_prompt = `
