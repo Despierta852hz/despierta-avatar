@@ -404,24 +404,6 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                   "bg-white "
                 )}
               >
-                {messages.length === 1 && (
-                  <div className="flex md:max-w-screen-md max-w-full overflow-x-auto  flex-rows" >
-                    {INITIAL_QUESTIONS.map((message) => {
-                      return (
-                        <button
-                          key={message.content}
-                          type="button"
-                          className="text-xs select-none  bg-white font-normal
-                      border border-gray-200 rounded-xl p-3 md:px-4 md:py-1
-                      hover:bg-green-50 hover:border-green-400"
-                          onClick={() => onClickQuestion(message.content)}
-                        >
-                          {message.content}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
                 <div className="w-full max-w-screen-md px-4  flex flex-wrap sm:flex-nowrap items-center">
 
                   <div className="w-full">
