@@ -104,8 +104,8 @@ export async function POST(req: NextRequest) {
     );
 
     const tool = createRetrieverTool(retriever, {
-      name: "Despierta-General-Knowledge",
-      description: "Use it to fetch information and specific recommandation from despierta ",
+      name: "Cannabis information",
+      description: "Use it to fetch information and specific recommandation from cbdmex about medicinal cannabis ",
     });
 
     const default_prompt = `
