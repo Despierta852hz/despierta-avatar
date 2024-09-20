@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     const chatModel = new ChatOpenAI({
       modelName: "gpt-o1-mini"
-
+        
 ",
       temperature: 0.2,
       streaming: true,
