@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from 'axios';
 
 // Verificar si el correo del usuario es el del administrador
-function isAdmin(email) {
+function isAdmin(email: string): boolean { 
     return email === "miguel.neumann@gmail.com"; // Cambia si hay más administradores
 }
 
@@ -14,7 +14,7 @@ async function getProducts() {
     });
 
     // Mapeamos los productos para extraer solo la información que necesitamos
-    const products = response.data.products.map((product) => ({
+    const products = response.data.products.map((product: any) => ({
         name: product.name,
         description: product.description,
         price: product.price,
@@ -26,7 +26,7 @@ async function getProducts() {
 }
 
 // Función para actualizar un producto (solo admin)
-async function updateProduct(productId, updatedData) {
+async function updateProduct(productId: string, updatedData: any) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.put(`https://www.wixapis.com/stores/v2/products/${productId}`, updatedData, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -35,7 +35,7 @@ async function updateProduct(productId, updatedData) {
 }
 
 // Función para crear un nuevo producto (solo admin)
-async function createProduct(newProductData) {
+async function createProduct(newProductData: any) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.post('https://www.wixapis.com/stores/v2/products', newProductData, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -44,7 +44,7 @@ async function createProduct(newProductData) {
 }
 
 // Función para eliminar un producto (solo admin)
-async function deleteProduct(productId) {
+async function deleteProduct(productId: string) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.delete(`https://www.wixapis.com/stores/v2/products/${productId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -53,7 +53,7 @@ async function deleteProduct(productId) {
 }
 
 // Obtener disponibilidad de servicios (reservas)
-async function getAvailability(serviceId) {
+async function getAvailability(serviceId: string) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.get(`https://www.wixapis.com/bookings/v2/availability/${serviceId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -62,7 +62,7 @@ async function getAvailability(serviceId) {
 }
 
 // Crear una nueva reserva (disponible para usuarios y admin)
-async function createBooking(bookingData) {
+async function createBooking(bookingData: any) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.post('https://www.wixapis.com/bookings/v2/bookings', bookingData, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -71,7 +71,7 @@ async function createBooking(bookingData) {
 }
 
 // Reprogramar o cancelar una reserva (solo admin)
-async function updateBooking(bookingId, updatedData) {
+async function updateBooking(bookingId: string, updatedData: any) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.put(`https://www.wixapis.com/bookings/v2/bookings/${bookingId}`, updatedData, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -80,7 +80,7 @@ async function updateBooking(bookingId, updatedData) {
 }
 
 // Crear o actualizar eventos (solo admin)
-async function createOrUpdateEvent(eventId, eventData) {
+async function createOrUpdateEvent(eventId: string, eventData: any) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.put(`https://www.wixapis.com/events/v2/events/${eventId}`, eventData, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -89,7 +89,7 @@ async function createOrUpdateEvent(eventId, eventData) {
 }
 
 // Eliminar eventos (solo admin)
-async function deleteEvent(eventId) {
+async function deleteEvent(eventId: string) {
     const apiKey = process.env.ZenAPIKey;
     const response = await axios.delete(`https://www.wixapis.com/events/v2/events/${eventId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
