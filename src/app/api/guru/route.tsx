@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     const products = await getProducts();
     return NextResponse.json({
         message: "¡Hola! Aquí tienes algunos productos que te podrían interesar:",
-        recommendations: products.map(product => ({
+        recommendations: products.map((product: any) => ({
             name: product.name,
             description: product.description,
             price: product.price,
