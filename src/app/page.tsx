@@ -108,7 +108,7 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
       return;
     }
 
-    try {
+        try {
       const tokenObj = await getTokenOrRefresh();
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -200,11 +200,18 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
           )}
         </div>
         <div>
-          <Form ref={formRef} onSubmit={handleSubmit} inputProps={{
-            disabled: streaming,
-            value: input,
-            onChange: handleInputChange,
-          }} />
+          <Form 
+            ref={formRef}
+            onSubmit={handleSubmit}
+            inputProps={{
+              disabled: streaming,
+              value: input,
+              onChange: handleInputChange,
+            }}
+            buttonProps={{  // Agregamos buttonProps
+              disabled: streaming,  // El botón estará deshabilitado mientras se esté haciendo streaming
+            }}
+          />
           <button onClick={sttFromMic} className="px-4 py-2 bg-green-500 text-white rounded">Start Speech Recognition</button>
         </div>
       </main>
