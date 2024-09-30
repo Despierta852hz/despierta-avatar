@@ -158,21 +158,24 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
   }
 
   // Función para manejar la síntesis de voz con la voz de México
-  const fetchTTS = async (text: string) => {
+  const fetchTTS = useCallback(async (text: string) => {
     try {
       if (audioPlayer) {
+        // Detenemos el audio actual antes de reproducir el nuevo
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
         setAudioPlayer(null);
       }
+
       const htmlText = marked(text) as string;
       const decodedHtml = he.decode(htmlText);
       const plainText = decodedHtml.replace(/<[^>]+>/g, '');
 
-      // Configuramos la voz en español de México
       const tokenObj = await getTokenOrRefresh();
       const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
-      speechConfig.speechSynthesisVoiceName = "es-MX-DaliaNeural"; // Cambiamos la voz
+      
+      // Configuramos la voz en español de México
+      speechConfig.speechSynthesisVoiceName = "es-MX-DaliaNeural";
 
       const audioConfig = AudioConfig.fromDefaultSpeakerOutput();
       const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
@@ -192,7 +195,7 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     } catch (error) {
       console.error("Error fetching TTS:", error);
     }
-  };
+  }, [audioPlayer]); // Envolvemos fetchTTS con useCallback y agregamos audioPlayer como dependencia
 
   // Manejamos las preguntas que Zen responde
   const onClickQuestion = (value: string) => {
@@ -259,7 +262,7 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
         setAudioPlayer(null);
       }
     },
-    [handleSubmit, input, audioPlayer, language, name, randqst, count] // Aseguramos dependencias correctas
+    [handleSubmit, audioPlayer, name, randqst, count] // Quitamos input y language
   );
 
   return (
