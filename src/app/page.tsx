@@ -17,7 +17,7 @@ const speechsdk = require('microsoft-cognitiveservices-speech-sdk');
 import { marked } from 'marked';
 import he from 'he';
 
-const saveMessages = (messages) => {
+const saveMessages = (messages: any) => { // Tipo cambiado a "any" para evitar errores de tipado
   if (typeof window !== 'undefined') {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
   }
