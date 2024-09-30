@@ -257,7 +257,7 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
       const plainText = decodedHtml.replace(/<[^>]+>/g, '');
       console.log("plain text : " + plainText)
       const audioRes = await fetch(
-        `/api/ttsstt?language=english&text=${plainText}&type=tts`
+        `/api/ttsstt?language=spanish-mexico&text=${plainText}&type=tts&voice=es-MX-DaliaNeural`
       );
       const audio = await audioRes.blob();
       const visemes = JSON.parse(
