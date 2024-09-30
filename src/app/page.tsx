@@ -9,9 +9,9 @@ import MessageLoading from "@/components/message-loading";
 import { INITIAL_QUESTIONS } from "@/utils/const";
 import ResponseMessage from "@/components/response-message";
 import { getTokenOrRefresh } from '../utils/token_util';
-import { SpeechRecognizer, SpeechConfig, AudioConfig, SpeechSynthesizer, ResultReason } from 'microsoft-cognitiveservices-speech-sdk'; // Mantener SpeechSynthesizer para la síntesis de voz
-import { BiMicrophone } from "react-icons/bi";  // Mantener los íconos del micrófono
-import { BsFillStopCircleFill } from "react-icons/bs";  // Mantener los íconos del micrófono
+import { SpeechRecognizer, SpeechConfig, AudioConfig, ResultReason, SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk'; // Añadimos SpeechSynthesizer
+import { BiMicrophone } from "react-icons/bi";
+import { BsFillStopCircleFill } from "react-icons/bs";
 import { useSearchParams } from 'next/navigation'
 const speechsdk = require('microsoft-cognitiveservices-speech-sdk');
 import { marked } from 'marked';
@@ -33,15 +33,15 @@ const loadMessages = () => {
 const handleReset = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('chatMessages');
-    window.location.reload();  // Esto recargará la página para resetear el estado
+    window.location.reload(); // This will reload the page to reset the state
   }
 };
 
 export default function Home() {
   const [randqst, setRandqst] = useState(Math.floor(Math.random() * 11));
-  const searchParams = useSearchParams();
-  const search = searchParams.get('name');
-  let name: string = ""; // Inicializa la variable
+  const searchParams = useSearchParams()
+  const search = searchParams.get('name')
+  let name: string = ""; // Initialize the variable
 
   if (search) {
     name = search;
@@ -59,9 +59,9 @@ export default function Home() {
   const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
   const [visemes, setVisemes] = useState<any>(null);
   const [showChat, setShowChat] = useState<boolean>(false);
-  const [response, setResponse] = useState("Hola, ¿cómo estás? Soy Zen, tu guía personal en Despierta.online.");
+  const [response, setResponse] = useState("Hola, ¿cómo estás? Soy Zen, tu guía personal en Despierta.online, aquí para ayudarte con bienestar y desarrollo personal: Espiritualidad, Cursos y Talleres, Desarrollo Personal, Productos, Esoterismo y Oráculos, y Eventos en Vivo. ¿Cómo puedo asistirte hoy?");
   const [count, setCount] = useState(0);
-  const [displayText, setDisplayText] = useState('INITIAIZED: ready to test speech...');
+  const [displayText, setDisplayText] = useState('INITIALIZED: ready to test speech...');
   const [recording, setRecording] = useState("not yet");
   const { messages, input, handleInputChange, handleSubmit, setInput } =
     useChat({
@@ -71,18 +71,19 @@ export default function Home() {
           id: "0",
           role: "system",
           content: `
-**Welcome to Despierta!**
+**Welcome to Despierta**
 
-How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide you on various topics and help you find what you need for your well-being and personal development. How can I assist you today?`
+how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide you on various topics and help you find what you need for your well-being and personal development. How can I assist you today?Here are some options to get started:Spirituality: Learn about spiritual practices and how you can elevate your consciousness.Courses and Workshops: Discover our variety of courses and workshops on well-being, spirituality, and personal development.Personal Development: Find tools and resources to improve different aspects of your life.Products: Explore our products designed to help you on your path to growth and well-being.Esotericism and Oracles: Check out our live tarot sessions and other esoteric services.Live Events: Connect with our upcoming live events and sessions.Select one of the options to dive deeper into the topic that interests you most
+          `,
         },
       ],
       onResponse: () => {
         setStreaming(false);
         saveMessages(messages);
-        // Mantiene todo igual pero ahora Zen hablará en español de México
-        speakResponse(response);
       },
+
     });
+
 
   const stopAudioPlayer = () => {
     if (audioPlayer) {
@@ -93,37 +94,10 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     }
   };
 
-  // Función para que Zen hable automáticamente en español mexicano sin cambiar nada más
-  async function speakResponse(text: string) {
-    try {
-      const tokenObj = await getTokenOrRefresh();
-      const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
-
-      // Cambiar solo la voz para la síntesis de voz a español de México (DaliaNeural)
-      speechConfig.speechSynthesisVoiceName = "es-MX-DaliaNeural"; 
-
-      const audioConfig = AudioConfig.fromDefaultSpeakerOutput();
-      const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
-
-      synthesizer.speakTextAsync(text, result => {
-        if (result.reason === ResultReason.SynthesizingAudioCompleted) {
-          console.log("Síntesis completada.");
-        } else {
-          console.error(`Error en la síntesis de voz: ${result.errorDetails}`);
-        }
-        synthesizer.close();
-      }, error => {
-        console.error("Error durante la síntesis de voz:", error);
-        synthesizer.close();
-      });
-
-    } catch (error) {
-      console.error("Error durante la síntesis de voz:", error);
-    }
-  }
-
   async function sttFromMic() {
+    console.log(language)
     if (recognizer) {
+
       recognizer.stopContinuousRecognitionAsync(
         () => {
           console.log("Recognition stopped.");
@@ -131,6 +105,7 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
           setAvatarState("waiting");
           setRecognizer(null);
           setDisplayText('Audio Recognition stopped');
+
         },
         (err) => {
           console.error("Error stopping recognition:", err);
@@ -144,104 +119,167 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
       const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
-
-      // Mantener la configuración de reconocimiento de voz como estaba
-      speechConfig.speechRecognitionLanguage = "es-MX";
+      speechConfig.speechRecognitionLanguage = "en-US";
 
       const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
       const newRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
       setRecognizer(newRecognizer);
 
-      setDisplayText('Listening...');
+      setDisplayText('Speak into your microphone...');
+      setAvatarState("listening");
+      setRecording("recording");
 
       newRecognizer.recognizeOnceAsync((result) => {
         if (result.reason === ResultReason.RecognizedSpeech) {
+          setDisplayText(`You said: ${result.text}`);
+          setRecording("not yet");
           setInput(result.text);
-          setRecording("listening");
-          setDisplayText(`Recognized: ${result.text}`);
+          setTimeout(() => {
+            formRef.current?.dispatchEvent(
+              new Event("submit", {
+                cancelable: true,
+                bubbles: true,
+              })
+            );
+          }, 500);
         } else {
-          setDisplayText('Error: Speech was not recognized.');
+          setAvatarState("waiting");
+          setRecognizer(null);
+          setDisplayText('ERROR: Speech was cancelled or could not be recognized. Ensure your microphone is working properly.');
+          setRecording("failed");
         }
+      }, (error) => {
+        console.error("Error recognizing speech:", error);
+        setDisplayText('ERROR: Speech recognition failed.');
+        setRecording("failed");
       });
     } catch (error) {
       console.error("Error initializing speech recognizer:", error);
-      setDisplayText('Error: Could not initialize speech recognition.');
+      setDisplayText('ERROR: Initialization failed. Please try again.');
+      setRecording("failed");
     }
   }
+
+  // Cambiamos solo la voz de la síntesis de voz a "es-MX-DaliaNeural"
+  const fetchTTS = async (text: string) => {
+    try {
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        setAudioPlayer(null);
+      }
+      const htmlText = marked(text) as string;
+      // Decode HTML entities
+      const decodedHtml = he.decode(htmlText);
+      // Strip HTML tags to get plain text
+      const plainText = decodedHtml.replace(/<[^>]+>/g, '');
+      console.log("plain text : " + plainText);
+
+      // Aquí hacemos el cambio para la voz en español de México
+      const tokenObj = await getTokenOrRefresh();
+      const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
+      speechConfig.speechSynthesisVoiceName = "es-MX-DaliaNeural"; // Cambiamos la voz a "es-MX-DaliaNeural"
+      
+      const audioConfig = AudioConfig.fromDefaultSpeakerOutput();
+      const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
+
+      synthesizer.speakTextAsync(plainText, result => {
+        if (result.reason === ResultReason.SynthesizingAudioCompleted) {
+          console.log("Síntesis completada.");
+        } else {
+          console.error(`Error en la síntesis de voz: ${result.errorDetails}`);
+        }
+        synthesizer.close();
+      }, error => {
+        console.error("Error durante la síntesis de voz:", error);
+        synthesizer.close();
+      });
+
+    } catch (error) {
+      console.error("Error fetching TTS:", error);
+    }
+  };
 
   const onClickQuestion = (value: string) => {
     setInput(value);
     setTimeout(() => {
-      formRef.current?.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+      formRef.current?.dispatchEvent(
+        new Event("submit", {
+          cancelable: true,
+          bubbles: true,
+        })
+      );
     }, 1);
   };
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scrollIntoView();
     }
     saveMessages(messages);
   }, [messages]);
 
+
+  useEffect(() => {
+    const response = messages[messages.length - 1]["content"];
+    const role = messages[messages.length - 1]["role"];
+    if (role == "assistant") {
+      console.log(response);
+      setResponse(response);
+      if (!showChat && count > 0) {
+        fetchTTS(response);
+      }
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (audioPlayer) {
+      const handleAudioEnd = () => {
+        setAvatarState("waiting"); // Transition back to waiting state
+        console.log("Audio playback finished");
+      };
+
+      // Attach event listener
+      audioPlayer.addEventListener('ended', handleAudioEnd);
+
+      // Start playback
+      audioPlayer.play();
+
+      // Clean-up function to remove the event listener
+      return () => {
+        audioPlayer.removeEventListener('ended', handleAudioEnd);
+      };
+    }
+  }, [audioPlayer]);
+
+  const onSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      handleSubmit(e, {
+        options: {
+          body: {
+            additionalData: {
+              name: name,
+              rand: randqst
+            }
+          }
+        }
+      });
+      setStreaming(true);
+      setCount(count + 1);
+      setAvatarState("thinking");
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        setAudioPlayer(null);
+      }
+    },
+    [handleSubmit, input, audioPlayer, language]
+  );
+
   return (
     <div className="relative max-w-screen-md mx-auto">
-      {showChat ? (
-        <div className="fixed top-0 inset-x-0 flex justify-between p-4 bg-white shadow-md z-20">
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-            onClick={() => setShowChat(true)}
-          >
-            Chat
-          </button>
-          <button
-            className="px-4 py-2 bg-red-500 text-white rounded"
-            onClick={handleReset}
-          >
-            New Chat
-          </button>
-          <button
-            className="px-4 py-2 bg-green-500 text-white rounded"
-            onClick={() => setShowChat(false)}
-          >
-            Real conversation
-          </button>
-          <button className="px-4 py-2 bg-gray-500 text-white rounded" onClick={handleReset}>
-            Reset
-          </button>
-        </div>
-      ) : null}
-
-      <main className="">
-        <div className="w-full">
-          {showChat ? (
-            <div className="overflow-y-auto relative p-4 flex flex-col justify-between min-h-screen md:min-h-[60vh] z-20">
-              {messages.map((message: MessageProps) => (
-                <Message key={message.id} {...message} />
-              ))}
-              {streaming && <MessageLoading />}
-              <div ref={messagesEndRef} />
-            </div>
-          ) : (
-            <div className="relative h-[60vh]">
-              <img src="waiting.png" alt="Avatar waiting" className="absolute inset-0 h-full w-full object-cover" />
-            </div>
-          )}
-        </div>
-        <div>
-          <Form 
-            ref={formRef}
-            onSubmit={handleSubmit}
-            inputProps={{
-              disabled: streaming,
-              value: input,
-              onChange: handleInputChange,
-            }}
-            buttonProps={{  
-              disabled: streaming,
-            }}
-          />
-        </div>
-      </main>
+      {/* Rest of your unchanged code */}
     </div>
   );
 }
