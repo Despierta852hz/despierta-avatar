@@ -58,7 +58,15 @@ export default function Home() {
   const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
   const [visemes, setVisemes] = useState<any>(null);
   const [showChat, setShowChat] = useState<boolean>(false);
-  const [response, setResponse] = useState("Hola, ¿cómo estás? Soy Zen, tu guía personal en Despierta.online, aquí para ayudarte con bienestar y desarrollo personal: Espiritualidad, Cursos y Talleres, Desarrollo Personal, Productos, Esoterismo y Oráculos, y Eventos en Vivo. ¿Cómo puedo asistirte hoy?");
+  const [response, setResponse] = useState("¡Hola! 🌟 Soy Zen, tu compañero en Despierta.online. Estoy aquí para acompañarte en tu camino hacia el bienestar y el crecimiento personal. Juntos podemos explorar:
+
+Espiritualidad ✨
+Cursos y Talleres 📚
+Desarrollo Personal 🌱
+Productos Especiales 🎁
+Esoterismo y Oráculos 🔮
+Eventos en Vivo 🎉
+Estoy emocionado de conocerte y apoyarte en lo que necesites. Cuéntame, ¿en qué puedo ayudarte hoy? 😊");
   const [count, setCount] = useState(0)
   const [displayText, setDisplayText] = useState('INITIALIZED: ready to test speech...');
   const [recording, setRecording] = useState("not yet");
