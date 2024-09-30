@@ -13,7 +13,7 @@ import { SpeechRecognizer, SpeechConfig, AudioConfig, ResultReason, SpeechSynthe
 import { BiMicrophone } from "react-icons/bi";
 import { BsFillStopCircleFill } from "react-icons/bs";
 import { useSearchParams } from 'next/navigation';
-import Image from 'next/image'; // Importamos Image para optimizar las imágenes
+import Image from 'next/image';
 import { marked } from 'marked';
 import he from 'he';
 
@@ -33,7 +33,7 @@ const loadMessages = () => {
 const handleReset = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('chatMessages');
-    window.location.reload(); // This will reload the page to reset the state
+    window.location.reload();
   }
 };
 
@@ -41,13 +41,14 @@ export default function Home() {
   const [randqst, setRandqst] = useState(Math.floor(Math.random() * 11));
   const searchParams = useSearchParams();
   const search = searchParams.get('name');
-  let name: string = ""; // Initialize the variable
+  let name: string = "";
 
   if (search) {
     name = search;
   } else {
     name = "";
   }
+
   const [language, setLanguage] = useState<string | null>(null);
   const [showLanguageDialog, setShowLanguageDialog] = useState<boolean>(false);
   const [recognizer, setRecognizer] = useState<SpeechRecognizer | null>(null);
@@ -62,8 +63,7 @@ export default function Home() {
   const [count, setCount] = useState(0);
   const [displayText, setDisplayText] = useState('INITIALIZED: ready to test speech...');
   const [recording, setRecording] = useState("not yet");
-  
-  // Hook para el manejo del chat y los mensajes
+
   const { messages, input, handleInputChange, handleSubmit, setInput } =
     useChat({
       api: "/api/guru",
@@ -93,7 +93,6 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     }
   };
 
-  // Manejo del reconocimiento de voz
   async function sttFromMic() {
     if (recognizer) {
       recognizer.stopContinuousRecognitionAsync(
@@ -157,11 +156,9 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     }
   }
 
-  // Función para manejar la síntesis de voz con la voz de México
   const fetchTTS = useCallback(async (text: string) => {
     try {
       if (audioPlayer) {
-        // Detenemos el audio actual antes de reproducir el nuevo
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
         setAudioPlayer(null);
@@ -173,8 +170,7 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
 
       const tokenObj = await getTokenOrRefresh();
       const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
-      
-      // Configuramos la voz en español de México
+
       speechConfig.speechSynthesisVoiceName = "es-MX-DaliaNeural";
 
       const audioConfig = AudioConfig.fromDefaultSpeakerOutput();
@@ -195,9 +191,8 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     } catch (error) {
       console.error("Error fetching TTS:", error);
     }
-  }, [audioPlayer]); // Envolvemos fetchTTS con useCallback y agregamos audioPlayer como dependencia
+  }, [audioPlayer]);
 
-  // Manejamos las preguntas que Zen responde
   const onClickQuestion = (value: string) => {
     setInput(value);
     setTimeout(() => {
@@ -210,7 +205,6 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     }, 1);
   };
 
-  // Hook para manejar cambios en los mensajes
   useEffect(() => {
     const response = messages[messages.length - 1]["content"];
     const role = messages[messages.length - 1]["role"];
@@ -220,13 +214,12 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
         fetchTTS(response);
       }
     }
-  }, [messages, count, fetchTTS, showChat]); // Aseguramos dependencias correctas
+  }, [messages, count, fetchTTS, showChat]);
 
-  // Hook para manejar la reproducción del audio
   useEffect(() => {
     if (audioPlayer) {
       const handleAudioEnd = () => {
-        setAvatarState("waiting"); // Regresamos al estado de espera
+        setAvatarState("waiting");
         console.log("Audio playback finished");
       };
 
@@ -239,7 +232,6 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     }
   }, [audioPlayer]);
 
-  // Manejamos el envío del formulario
   const onSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -262,7 +254,7 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
         setAudioPlayer(null);
       }
     },
-    [handleSubmit, audioPlayer, name, randqst, count] // Quitamos input y language
+    [handleSubmit, audioPlayer, name, randqst, count]
   );
 
   return (
