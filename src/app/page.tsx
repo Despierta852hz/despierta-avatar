@@ -9,9 +9,9 @@ import MessageLoading from "@/components/message-loading";
 import { INITIAL_QUESTIONS } from "@/utils/const";
 import ResponseMessage from "@/components/response-message";
 import { getTokenOrRefresh } from '../utils/token_util';
-import { SpeechRecognizer, SpeechConfig, AudioConfig, SpeechSynthesizer, ResultReason } from 'microsoft-cognitiveservices-speech-sdk'; // Importamos SpeechSynthesizer para Text-to-Speech
-import { BiMicrophone } from "react-icons/bi";
-import { BsFillStopCircleFill } from "react-icons/bs";
+import { SpeechRecognizer, SpeechConfig, AudioConfig, SpeechSynthesizer, ResultReason } from 'microsoft-cognitiveservices-speech-sdk'; // Mantener SpeechSynthesizer para la síntesis de voz
+import { BiMicrophone } from "react-icons/bi";  // Mantener los íconos del micrófono
+import { BsFillStopCircleFill } from "react-icons/bs";  // Mantener los íconos del micrófono
 import { useSearchParams } from 'next/navigation'
 const speechsdk = require('microsoft-cognitiveservices-speech-sdk');
 import { marked } from 'marked';
@@ -79,7 +79,7 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
       onResponse: () => {
         setStreaming(false);
         saveMessages(messages);
-        // Llamamos a la función para que Zen hable automáticamente en español mexicano
+        // Mantiene todo igual pero ahora Zen hablará en español de México
         speakResponse(response);
       },
     });
@@ -93,13 +93,13 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     }
   };
 
-  // Función para que Zen hable automáticamente en español mexicano
+  // Función para que Zen hable automáticamente en español mexicano sin cambiar nada más
   async function speakResponse(text: string) {
     try {
       const tokenObj = await getTokenOrRefresh();
       const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
 
-      // Cambiamos solo la voz para la síntesis a español de México (DaliaNeural)
+      // Cambiar solo la voz para la síntesis de voz a español de México (DaliaNeural)
       speechConfig.speechSynthesisVoiceName = "es-MX-DaliaNeural"; 
 
       const audioConfig = AudioConfig.fromDefaultSpeakerOutput();
@@ -119,6 +119,53 @@ How are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
 
     } catch (error) {
       console.error("Error durante la síntesis de voz:", error);
+    }
+  }
+
+  async function sttFromMic() {
+    if (recognizer) {
+      recognizer.stopContinuousRecognitionAsync(
+        () => {
+          console.log("Recognition stopped.");
+          setRecording("not yet");
+          setAvatarState("waiting");
+          setRecognizer(null);
+          setDisplayText('Audio Recognition stopped');
+        },
+        (err) => {
+          console.error("Error stopping recognition:", err);
+        }
+      );
+      return;
+    }
+
+    try {
+      const tokenObj = await getTokenOrRefresh();
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
+
+      // Mantener la configuración de reconocimiento de voz como estaba
+      speechConfig.speechRecognitionLanguage = "es-MX";
+
+      const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
+      const newRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
+      setRecognizer(newRecognizer);
+
+      setDisplayText('Listening...');
+
+      newRecognizer.recognizeOnceAsync((result) => {
+        if (result.reason === ResultReason.RecognizedSpeech) {
+          setInput(result.text);
+          setRecording("listening");
+          setDisplayText(`Recognized: ${result.text}`);
+        } else {
+          setDisplayText('Error: Speech was not recognized.');
+        }
+      });
+    } catch (error) {
+      console.error("Error initializing speech recognizer:", error);
+      setDisplayText('Error: Could not initialize speech recognition.');
     }
   }
 
