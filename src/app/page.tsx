@@ -85,6 +85,70 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     }
   };
 
+  async function sttFromMic() {
+    console.log("Language for STT: ", language);
+    if (recognizer) {
+      recognizer.stopContinuousRecognitionAsync(
+        () => {
+          console.log("Recognition stopped.");
+          setRecording("not yet");
+          setAvatarState("waiting");
+          setRecognizer(null);
+          setDisplayText('Audio Recognition stopped');
+        },
+        (err) => {
+          console.error("Error stopping recognition:", err);
+        }
+      );
+      return;
+    }
+
+    try {
+      const tokenObj = await getTokenOrRefresh();
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
+      speechConfig.speechRecognitionLanguage = "en-US";
+
+      const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
+      const newRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
+      setRecognizer(newRecognizer);
+
+      setDisplayText('Speak into your microphone...');
+      setAvatarState("listening");
+      setRecording("recording");
+
+      newRecognizer.recognizeOnceAsync((result) => {
+        if (result.reason === ResultReason.RecognizedSpeech) {
+          setDisplayText(`You said: ${result.text}`);
+          setRecording("not yet");
+          setInput(result.text);
+          setTimeout(() => {
+            formRef.current?.dispatchEvent(
+              new Event("submit", {
+                cancelable: true,
+                bubbles: true,
+              })
+            );
+          }, 500);
+        } else {
+          setAvatarState("waiting");
+          setRecognizer(null);
+          setDisplayText('ERROR: Speech was cancelled or could not be recognized. Ensure your microphone is working properly.');
+          setRecording("failed");
+        }
+      }, (error) => {
+        console.error("Error recognizing speech:", error);
+        setDisplayText('ERROR: Speech recognition failed.');
+        setRecording("failed");
+      });
+    } catch (error) {
+      console.error("Error initializing speech recognizer:", error);
+      setDisplayText('ERROR: Initialization failed. Please try again.');
+      setRecording("failed");
+    }
+  }
+
   const fetchTTS = async (text: string) => {
     try {
       if (audioPlayer) {
