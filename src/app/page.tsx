@@ -17,6 +17,7 @@ import { marked } from 'marked';
 import he from 'he';
 import Image from 'next/image';
 
+// Funciones utilitarias para guardar y cargar mensajes
 const saveMessages = (messages: any) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
@@ -146,17 +147,34 @@ export default function Home() {
     }
   }
 
-  const onClickQuestion = (value: string) => {
-    setInput(value);
-    setTimeout(() => {
-      formRef.current?.dispatchEvent(
-        new Event("submit", {
-          cancelable: true,
-          bubbles: true,
-        })
+  // Definimos la función fetchTTS antes del useEffect
+  const fetchTTS = useCallback(async (text: string) => {
+    try {
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        setAudioPlayer(null);
+      }
+      const plainText = he.decode(marked(text)).replace(/<[^>]+>/g, '');
+
+      // Aquí actualizamos la voz a es-MX-DaliaNeural para español de México
+      const audioRes = await fetch(
+        `/api/ttsstt?language=spanish&voice=es-MX-DaliaNeural&text=${encodeURIComponent(plainText)}&type=tts`
       );
-    }, 1);
-  };
+      const audio = await audioRes.blob();
+      const visemes = JSON.parse(
+        (await audioRes.headers.get("visemes")) || "[]"
+      );
+      const audioUrl = URL.createObjectURL(audio);
+      const audioplayer = new Audio(audioUrl);
+
+      setAudioPlayer(audioplayer);
+      setVisemes(visemes);
+      setAvatarState("speaking");
+    } catch (error) {
+      console.error("Error fetching TTS:", error);
+    }
+  }, [audioPlayer]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -165,7 +183,7 @@ export default function Home() {
     saveMessages(messages);
   }, [messages]);
 
-  // Corrección del useEffect para dependencias faltantes
+  // useEffect corregido para incluir fetchTTS
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.role === "assistant") {
@@ -196,36 +214,8 @@ export default function Home() {
         setAudioPlayer(null);
       }
     },
-    [handleSubmit, input, audioPlayer, name, randqst]
+    [handleSubmit, audioPlayer, name, randqst]
   );
-
-  const fetchTTS = async (text: string) => {
-    try {
-      if (audioPlayer) {
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
-        setAudioPlayer(null);
-      }
-      const plainText = he.decode(marked(text)).replace(/<[^>]+>/g, '');
-
-      // Aquí actualizamos la voz a es-MX-DaliaNeural para español de México
-      const audioRes = await fetch(
-        `/api/ttsstt?language=spanish&voice=es-MX-DaliaNeural&text=${encodeURIComponent(plainText)}&type=tts`
-      );
-      const audio = await audioRes.blob();
-      const visemes = JSON.parse(
-        (await audioRes.headers.get("visemes")) || "[]"
-      );
-      const audioUrl = URL.createObjectURL(audio);
-      const audioplayer = new Audio(audioUrl);
-
-      setAudioPlayer(audioplayer);
-      setVisemes(visemes);
-      setAvatarState("speaking");
-    } catch (error) {
-      console.error("Error fetching TTS:", error);
-    }
-  };
 
   return (
     <div className="relative max-w-screen-md mx-auto">
