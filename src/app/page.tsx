@@ -13,9 +13,9 @@ import { SpeechRecognizer, SpeechConfig, AudioConfig, ResultReason } from 'micro
 import { BiMicrophone } from "react-icons/bi";
 import { BsFillStopCircleFill } from "react-icons/bs";
 import { useSearchParams } from 'next/navigation';
-const speechsdk = require('microsoft-cognitiveservices-speech-sdk');
 import { marked } from 'marked';
 import he from 'he';
+import Image from 'next/image';
 
 const saveMessages = (messages: any) => {
   if (typeof window !== 'undefined') {
@@ -33,7 +33,7 @@ const loadMessages = () => {
 const handleReset = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('chatMessages');
-    window.location.reload(); // This will reload the page to reset the state
+    window.location.reload();
   }
 };
 
@@ -41,14 +41,8 @@ export default function Home() {
   const [randqst, setRandqst] = useState(Math.floor(Math.random() * 11));
   const searchParams = useSearchParams();
   const search = searchParams.get('name');
-  let name: string = ""; // Initialize the variable
-
-  if (search) {
-    name = search;
-  } else {
-    name = "";
-  }
-
+  let name: string = search ? search : "";
+  
   const [language, setLanguage] = useState<string | null>(null);
   const [showLanguageDialog, setShowLanguageDialog] = useState<boolean>(false);
   const [recognizer, setRecognizer] = useState<SpeechRecognizer | null>(null);
@@ -59,7 +53,7 @@ export default function Home() {
   const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
   const [visemes, setVisemes] = useState<any>(null);
   const [showChat, setShowChat] = useState<boolean>(false);
-  const [response, setResponse] = useState("Hola, ¿cómo estás? Soy Zen, tu guía personal en Despierta.online, aquí para ayudarte con bienestar y desarrollo personal: Espiritualidad, Cursos y Talleres, Desarrollo Personal, Productos, Esoterismo y Oráculos, y Eventos en Vivo. ¿Cómo puedo asistirte hoy?");
+  const [response, setResponse] = useState("Hola, ¿cómo estás? Soy Zen, tu guía personal en Despierta.online...");
   const [count, setCount] = useState(0);
   const [displayText, setDisplayText] = useState('INITIALIZED: ready to test speech...');
   const [recording, setRecording] = useState("not yet");
@@ -71,10 +65,8 @@ export default function Home() {
           id: "0",
           role: "system",
           content: `
-**Welcome to Despierta**
-
-how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide you on various topics and help you find what you need for your well-being and personal development. How can I assist you today? Here are some options to get started: Spirituality, Courses and Workshops, Personal Development, Products, Esotericism and Oracles, and Live Events.
-          `,
+          **Welcome to Despierta**
+          How are you? I'm Zen, your personal guide...`
         },
       ],
       onResponse: () => {
@@ -93,11 +85,9 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
   };
 
   async function sttFromMic() {
-    console.log(language);
     if (recognizer) {
       recognizer.stopContinuousRecognitionAsync(
         () => {
-          console.log("Recognition stopped.");
           setRecording("not yet");
           setAvatarState("waiting");
           setRecognizer(null);
@@ -115,7 +105,7 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
       const speechConfig = SpeechConfig.fromAuthorizationToken(tokenObj.authToken, tokenObj.region);
-      speechConfig.speechRecognitionLanguage = "en-US"; // Keep the STT language as English
+      speechConfig.speechRecognitionLanguage = "en-US";
 
       const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
       const newRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
@@ -141,7 +131,7 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
         } else {
           setAvatarState("waiting");
           setRecognizer(null);
-          setDisplayText('ERROR: Speech was cancelled or could not be recognized. Ensure your microphone is working properly.');
+          setDisplayText('ERROR: Speech was cancelled or could not be recognized.');
           setRecording("failed");
         }
       }, (error) => {
@@ -175,48 +165,30 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
     saveMessages(messages);
   }, [messages]);
 
+  // Corrección del useEffect para dependencias faltantes
   useEffect(() => {
-    const response = messages[messages.length - 1]["content"];
-    const role = messages[messages.length - 1]["role"];
-    if (role == "assistant") {
-      setResponse(response);
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === "assistant") {
+      setResponse(lastMessage.content);
       if (!showChat && count > 0) {
-        fetchTTS(response);
+        fetchTTS(lastMessage.content);
       }
     }
-  }, [messages]);
+  }, [messages, count, fetchTTS, showChat]);
 
-  useEffect(() => {
-    if (audioPlayer) {
-      const handleAudioEnd = () => {
-        setAvatarState("waiting");
-        console.log("Audio playback finished");
-      };
-
-      audioPlayer.addEventListener('ended', handleAudioEnd);
-      audioPlayer.play();
-
-      return () => {
-        audioPlayer.removeEventListener('ended', handleAudioEnd);
-      };
-    }
-  }, [audioPlayer]);
-
+  // Corrección del useCallback para dependencias faltantes
   const onSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       handleSubmit(e, {
         options: {
           body: {
-            additionalData: {
-              name: name,
-              rand: randqst
-            }
-          }
-        }
+            additionalData: { name, rand: randqst },
+          },
+        },
       });
       setStreaming(true);
-      setCount(count + 1);
+      setCount((c) => c + 1); // Cambié el uso de count
       setAvatarState("thinking");
       if (audioPlayer) {
         audioPlayer.pause();
@@ -224,7 +196,7 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
         setAudioPlayer(null);
       }
     },
-    [handleSubmit, input, audioPlayer, language]
+    [handleSubmit, input, audioPlayer, name, randqst]
   );
 
   const fetchTTS = async (text: string) => {
@@ -234,14 +206,11 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
         audioPlayer.currentTime = 0;
         setAudioPlayer(null);
       }
-      const htmlText = marked(text) as string;
-      const decodedHtml = he.decode(htmlText);
-      const plainText = decodedHtml.replace(/<[^>]+>/g, '');
-      console.log("plain text : " + plainText);
+      const plainText = he.decode(marked(text)).replace(/<[^>]+>/g, '');
 
-      // Use es-MX-DaliaNeural (female voice for Spanish Mexico)
+      // Aquí actualizamos la voz a es-MX-DaliaNeural para español de México
       const audioRes = await fetch(
-        `/api/ttsstt?language=spanish&voice=es-MX-DaliaNeural&text=${plainText}&type=tts`
+        `/api/ttsstt?language=spanish&voice=es-MX-DaliaNeural&text=${encodeURIComponent(plainText)}&type=tts`
       );
       const audio = await audioRes.blob();
       const visemes = JSON.parse(
@@ -264,18 +233,12 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
         <div className="w-full">
           {showChat ? (
             <div className="overflow-y-auto relative p-4 md:p-6 flex flex-col min-h-svh !py-32 md:!py-40">
-              {messages.map((message: MessageProps) => {
-                return <Message key={message.id} {...message} />;
-              })}
+              {messages.map((message: MessageProps) => (
+                <Message key={message.id} {...message} />
+              ))}
               {streaming && <MessageLoading />}
               <div ref={messagesEndRef} />
-              <div
-                className={cx(
-                  "fixed z-10 bottom-0 inset-x-0",
-                  "flex justify-center items-center",
-                  "bg-white"
-                )}
-              >
+              <div className="fixed z-10 bottom-0 inset-x-0 flex justify-center items-center bg-white">
                 <span className="absolute bottom-full h-10 inset-x-0 from-white/0 bg-gradient-to-b to-white pointer-events-none" />
                 <div className="w-full max-w-screen-md rounded-xl px-4 md:px-5 py-6">
                   <Form
@@ -294,14 +257,15 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
               </div>
             </div>
           ) : (
-            <div className="flex justify-center w-full mar h-dvh flex-col items-center !pb-30 md:!pb-16   ">
+            <div className="flex justify-center w-full mar h-dvh flex-col items-center !pb-30 md:!pb-16">
               <div className="relative h-4/5 w-full flex items-center justify-center">
-                <img
-                  src="waiting.png"
+                <Image
+                  src="/waiting.png"
+                  alt="waiting"
                   className={`absolute h-full w-auto ${avatarState === "waiting" ? "fade-enter fade-enter-active" : "fade-exit fade-exit-active"}`}
                 />
                 <video
-                  src="listening.mp4"
+                  src="/listening.mp4"
                   playsInline
                   autoPlay
                   muted
@@ -310,7 +274,7 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                   className={`absolute inset-0 h-full w-full ${avatarState === "listening" ? "fade-enter fade-enter-active" : "fade-exit fade-exit-active"}`}
                 />
                 <video
-                  src="thinking.mp4"
+                  src="/thinking.mp4"
                   playsInline
                   autoPlay
                   muted
@@ -319,7 +283,7 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                   className={`absolute inset-0 h-full w-full ${avatarState === "thinking" ? "fade-enter fade-enter-active" : "fade-exit fade-exit-active"}`}
                 />
                 <video
-                  src="speaking.mp4"
+                  src="/speaking.mp4"
                   playsInline
                   autoPlay
                   muted
@@ -328,26 +292,12 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                   className={`absolute inset-0 h-full w-full ${avatarState === "speaking" ? "fade-enter fade-enter-active" : "fade-exit fade-exit-active"}`}
                 />
               </div>
-              {avatarState === "waiting" && (
-                <ResponseMessage content={response} style={{ height: '60%' }} />
-              )}
-              {avatarState === "listening" && (
-                <ResponseMessage content="Listening ..." style={{ height: '60%' }} />
-              )}
-              {avatarState === "thinking" && (
-                <ResponseMessage content="Generating Your response ..." style={{ height: '60%' }} />
-              )}
-              {avatarState === "speaking" && (
-                <ResponseMessage content={response} style={{ height: '60%' }} />
-              )}
-              <div
-                className={cx(
-                  "fixed mt-6 z-10 bottom-0 inset-x-0",
-                  "flex flex-col justify-center items-center",
-                  "bg-white "
-                )}
-              >
-                <div className="w-full max-w-screen-md px-4  flex flex-wrap sm:flex-nowrap items-center">
+              {avatarState === "waiting" && <ResponseMessage content={response} style={{ height: '60%' }} />}
+              {avatarState === "listening" && <ResponseMessage content="Listening ..." style={{ height: '60%' }} />}
+              {avatarState === "thinking" && <ResponseMessage content="Generating Your response ..." style={{ height: '60%' }} />}
+              {avatarState === "speaking" && <ResponseMessage content={response} style={{ height: '60%' }} />}
+              <div className="fixed mt-6 z-10 bottom-0 inset-x-0 flex flex-col justify-center items-center bg-white">
+                <div className="w-full max-w-screen-md px-4 flex flex-wrap sm:flex-nowrap items-center">
                   <div className="w-full">
                     <Form
                       ref={formRef}
@@ -362,7 +312,6 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                       }}
                     />
                   </div>
-
                   {avatarState === "waiting" && (
                     <div>
                       {language ? (
@@ -383,16 +332,11 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                   {avatarState === "listening" && (
                     <button onClick={() => sttFromMic()}><span className="flex items-center justify-center bg-black rounded-full p-4"><BsFillStopCircleFill className="text-blue-500 text-3xl" /></span></button>
                   )}
-                  {avatarState === "thinking" && (
-                    <>...</>
-                  )}
+                  {avatarState === "thinking" && <>...</>}
                   {avatarState === "speaking" && (
                     <button onClick={() => stopAudioPlayer()}><span className="flex items-center justify-center bg-black rounded-full p-4"><BsFillStopCircleFill className="text-blue-500 text-3xl" /></span></button>
                   )}
-                  <button
-                    className="bg-red-500 text-xs text-white rounded"
-                    onClick={handleReset}
-                  >
+                  <button className="bg-red-500 text-xs text-white rounded" onClick={handleReset}>
                     Empezar de nuevo
                   </button>
                 </div>
@@ -409,18 +353,13 @@ how are you? I'm Zen, your personal guide at Despierta.online. I'm here to guide
                 onChange={(e) => setLanguage(e.target.value)}
                 defaultValue=""
               >
-                <option value="" disabled>
-                  Select Language
-                </option>
+                <option value="" disabled>Select Language</option>
                 <option value="en-US">English</option>
-                <option value="es-ES">Spanish</option>
+                <option value="es-ES">Spanish (Spain)</option>
                 <option value="es-MX">Español (México)</option>
               </select>
               <div className="flex justify-end">
-                <button
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                  onClick={() => setShowLanguageDialog(false)}
-                >
+                <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => setShowLanguageDialog(false)}>
                   Set Language
                 </button>
               </div>
